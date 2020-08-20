@@ -1,13 +1,16 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, Integer, String, Float
+from flask_marshmallow import Marshmallow
 import os
 
 
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.db')
+
 db = SQLAlchemy(app)
+ma = Marshmallow(app)
 
 
 # COMMANDS FOR DATABASE
@@ -69,6 +72,28 @@ def url_variables(name: str, age: int):
     else:
         return jsonify(message="Welcome " + name + ", you are old enough!")
     
+    
+@app.route('/did_number', methods=['GET'])
+def did_number():
+    did_number_list = DidNumber.query.all()
+    result = dids_number_schema.dump(did_number_list)
+    return jsonify(result)
+
+
+@app.route('/register', methods=['POST'])
+def register():
+    email = request.form['email']
+    test = User.query.filter_by(email=email).first()
+    if test:
+        return jsonify(message='This email is already registered!'), 409
+    else:
+        name = request.form['name']
+        password = request.form['password']
+        new_user = User(name=name, email=email, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify(message='User created!')
+    
 # END ROUTES FOR API
 
 
@@ -80,8 +105,28 @@ class DidNumber(db.Model):
     monthyPrice = Column(Float)
     setupPrice = Column(Float)
     currency = Column(String)
+
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    email = Column(String, unique=True)
+    password = Column(String)
     
 # END MODELS
+
+
+# SCHEMA with marshmallow
+class DidNumberSchema(ma.Schema):
+    class Meta:
+        fields = ('id', 'value', 'monthyPrice', 'setupPrice', 'currency')
+
+# END SCHEMA
+
+
+did_number_schema = DidNumberSchema()
+dids_number_schema = DidNumberSchema(many=True)
 
 
 if __name__ == '__main__':
