@@ -1,7 +1,11 @@
 from flask import Flask, jsonify, request
-
+from flask_sqlalchemy import SQLAlchemy
+import os
 
 app = Flask(__name__)
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.db')
+db = SQLAlchemy(app)
 
 
 @app.route('/')
@@ -38,4 +42,4 @@ def url_variables(name: str, age: int):
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(port=5000, debug=True)
