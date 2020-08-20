@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Column, Integer, String, Float
 import os
+
 
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -8,6 +10,33 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'da
 db = SQLAlchemy(app)
 
 
+# COMMANDS FOR DATABASE
+@app.cli.command('db_create')
+def db_create():
+    db.create_all()
+    print('DB created!')
+
+
+@app.cli.command('db_drop')
+def db_drop():
+    db.drop_all()
+    print('Database dropped!')
+
+
+@app.cli.command('db_seed')
+def db_seed():
+    new_number = DidNumber(value="+55 84 91234-4321",
+                           monthyPrice=0.03,
+                           setupPrice=3.40,
+                           currency="U$")
+    db.session.add(new_number)
+    db.session.commit()
+    print('DB seeded!')
+    
+# END COMMANDS FOR DATABASE
+
+
+# ROUTES FOR API
 @app.route('/')
 def hello_world():
     return 'Hello World!'
@@ -39,6 +68,20 @@ def url_variables(name: str, age: int):
         return jsonify(message="Sorry " + name + ", you are not old enough."), 401
     else:
         return jsonify(message="Welcome " + name + ", you are old enough!")
+    
+# END ROUTES FOR API
+
+
+# MODELS
+class DidNumber(db.Model):
+    __tablename__ = 'did'
+    id = Column(Integer, primary_key=True)
+    value = Column(String, unique=True)
+    monthyPrice = Column(Float)
+    setupPrice = Column(Float)
+    currency = Column(String)
+    
+# END MODELS
 
 
 if __name__ == '__main__':
