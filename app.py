@@ -46,24 +46,6 @@ def db_seed():
 
 
 # ROUTES FOR API
-@app.route('/')
-def hello_world():
-    return 'Hello World!'
-
-
-@app.route('/not_found')
-def not_found():
-    return jsonify(message='That resource was not found'), 404
-
-
-@app.route('/url_variables/<string:name>/<int:age>')
-def url_variables(name: str, age: int):
-    if age < 18:
-        return jsonify(message="Sorry " + name + ", you are not old enough."), 401
-    else:
-        return jsonify(message="Welcome " + name + ", you are old enough!")
-    
-    
 @app.route('/did_number', methods=['GET'])
 def did_number_list_all():
     did_number_list = DidNumber.query.all()
@@ -84,16 +66,10 @@ def did_number_detail_by_id(did_number_id: int):
 @app.route('/add_number', methods=['POST'])
 @jwt_required
 def add_number():
-    if request.is_json:
-        value = request.json['value']
-        monthyPrice = request.json['monthyPrice']
-        setupPrice = request.json['setupPrice']
-        currency = request.json['currency']
-    else:
-        value = request.form['value']
-        monthyPrice = float(request.form['monthyPrice'])
-        setupPrice = float(request.form['setupPrice'])
-        currency = request.form['currency']
+    value = request.json['value']
+    monthyPrice = request.json['monthyPrice']
+    setupPrice = request.json['setupPrice']
+    currency = request.json['currency']
     test = DidNumber.query.filter_by(value=value).first()
     if test:
         return jsonify(message='This number is already registered!'), 409
@@ -112,7 +88,6 @@ def add_number():
 def update_number():
     number_id = int(request.form['id'])
     did_number = DidNumber.query.filter_by(id=number_id).first()
-    test = DidNumber.query.filter_by(value=request.form['value'])
 
     if did_number:
         did_number.value = request.form['value']
@@ -139,15 +114,9 @@ def delete_number(did_number_id: int):
     
 @app.route('/register', methods=['POST'])
 def register():
-    if request.is_json:
-        email = request.json['email']
-        name = request.json['name']
-        password = request.json['password']
-    else:
-        email = request.form['email']
-        name = request.form['name']
-        password = request.form['password']
-    
+    email = request.json['email']
+    name = request.json['name']
+    password = request.json['password']
     test = User.query.filter_by(email=email).first()
     if test:
         return jsonify(message='This email is already registered!'), 409
