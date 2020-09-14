@@ -64,7 +64,7 @@ def did_number_detail_by_id(did_number_id: int):
     
 
 @app.route('/add_number', methods=['POST'])
-@jwt_required
+# @jwt_required
 def add_number():
     value = request.json['value']
     monthyPrice = request.json['monthyPrice']
@@ -84,26 +84,26 @@ def add_number():
     
 
 @app.route('/update_number', methods=['PUT', 'POST'])
-@jwt_required
+# @jwt_required
 def update_number():
-    number_id = int(request.form['id'])
+    number_id = request.json['id']
     did_number = DidNumber.query.filter_by(id=number_id).first()
 
     if did_number:
-        did_number.value = request.form['value']
-        did_number.monthyPrice = float(request.form['monthyPrice'])
-        did_number.setupPrice = float(request.form['setupPrice'])
-        did_number.currency = request.form['currency']
+        did_number.value = request.json['value']
+        did_number.monthyPrice = float(request.json['monthyPrice'])
+        did_number.setupPrice = float(request.json['setupPrice'])
+        did_number.currency = request.json['currency']
         db.session.commit()
         return jsonify(message='You updated the number'), 202
     else:
         return jsonify(message='The number does not exist!'), 404
 
 
-@app.route('/delete/<int:did_number_id>', methods=['DELETE'])
-@jwt_required
+@app.route('/delete_number/<int:did_number_id>', methods=['DELETE'])
+# @jwt_required
 def delete_number(did_number_id: int):
-    did_number = DidNumber.query.filter_by(id=did_number_id)
+    did_number = DidNumber.query.filter_by(id=did_number_id).first()
     if did_number:
         db.session.delete(did_number)
         db.session.commit()
