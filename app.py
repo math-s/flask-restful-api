@@ -70,6 +70,10 @@ def add_number():
     monthyPrice = request.json['monthyPrice']
     setupPrice = request.json['setupPrice']
     currency = request.json['currency']
+
+    if value < 0 or monthyPrice < 0 or setupPrice < 0:
+        return jsonify(message='Price cant be negative.'), 400 
+
     test = DidNumber.query.filter_by(value=value).first()
     if test:
         return jsonify(message='This number is already registered!'), 409
@@ -90,14 +94,18 @@ def update_number():
     did_number = DidNumber.query.filter_by(id=number_id).first()
 
     if did_number:
-        did_number.value = request.json['value']
-        did_number.monthyPrice = float(request.json['monthyPrice'])
-        did_number.setupPrice = float(request.json['setupPrice'])
+        if did_number.value < 0 or did_number.monthyPrice < 0 or did_number.setupPrice < 0:
+            return jsonify(message='Price cant be negative.'), 400 
+        else:
+            did_number.value = request.json['value']
+            did_number.monthyPrice = float(request.json['monthyPrice'])
+            did_number.setupPrice = float(request.json['setupPrice'])
+        
         did_number.currency = request.json['currency']
         db.session.commit()
         return jsonify(message='You updated the number'), 202
     else:
-        return jsonify(message='The number does not exist!'), 404
+        return jsonify(message='This number does not exist!'), 404
 
 
 @app.route('/delete_number/<int:did_number_id>', methods=['DELETE'])
